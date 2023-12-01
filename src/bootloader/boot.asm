@@ -9,19 +9,19 @@ bits 16
 jmp short start 
 nop
 
-bdb_oem:                 		db 'MSWIN4.1'			; 8 bytes
-bdb_bytes_per_sector:    		dw 512
-bdb_sectors_per_cluster: 		db 1
-bdb_reserverd_sectors:   		dw 1
-bdb_fat_count: 							db 2
-bdb_dir_entries_count:			dw 0E0h
-bdb_total_sectors:					dw 2880						; 2880 * 512 = 1.44MB
-bdb_media_descritpor_type:	db 0F0h						; F0 = 3.5" floppy disk
-bdb_sectors_per_fat:				dw 9							; 9 sectors/fat
-bdb_sectors_per_track:			dw 18
-bdb_heads:									dw 2
-bdb_hidden_sectors:					dd 0
-bdb_large_sector_count:			dd 0
+bpb_oem_ident:           		db 'MSWIN4.1'			; 8 bytes
+bpb_bytes_per_sector:    		dw 512
+bpb_sectors_per_cluster: 		db 1
+bpb_reserverd_sectors:   		dw 1
+bpb_fat_count: 							db 2
+bpb_dir_entries_count:			dw 0E0h
+bpb_total_sectors:					dw 2880						; 2880 * 512 = 1.44MB
+bpb_media_descritpor_type:	db 0F0h						; F0 = 3.5" floppy disk
+bpb_sectors_per_fat:				dw 9							; 9 sectors/fat
+bpb_sectors_per_track:			dw 18
+bpb_heads:									dw 2
+bpb_hidden_sectors:					dd 0
+bpb_large_sector_count:			dd 0
 
 ; Расширенная загрузочная запись
 ebr_drive_number: 					db 0
