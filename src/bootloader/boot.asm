@@ -90,6 +90,7 @@ main:
 	mov si, msg_hello
 	call puts
 	
+	cli
 	hlt
 
 floppy_error:
@@ -166,7 +167,7 @@ disk_read:
 .retry:
 	pusha																; save all registers
 	stc																	; set carry flag, some BIOS'es don't set it
-	int 13h
+	int 13h															; carry flag cleared = success
 	jnc	.done
 	
 	; failed
@@ -183,11 +184,11 @@ disk_read:
 .done:
 	popa
 
-	push di
-	push dx
-	push cx
-	push bx
-	push ax
+	pop di
+	pop dx
+	pop cx
+	pop bx
+	pop ax
 	ret
 
 ;
