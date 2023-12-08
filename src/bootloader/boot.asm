@@ -9,27 +9,27 @@ bits 16
 jmp short start 
 nop
 
-bpb_oem_ident:           		db 'MSWIN4.1'			; 8 bytes
+bpb_oem_ident:           		db 'MSWIN4.1'				; 8 bytes
 bpb_bytes_per_sector:    		dw 512
 bpb_sectors_per_cluster: 		db 1
 bpb_reserved_sectors:   		dw 1
-bpb_fat_count:							db 2
+bpb_fat_count:					db 2
 bpb_dir_entries_count:			dw 0E0h
-bpb_total_sectors:					dw 2880						; 2880 * 512 = 1.44MB
-bpb_media_descriptor_type:	db 0F0h						; F0 = 3.5" floppy disk
-bpb_sectors_per_fat:				dw 9							; 9 sectors/fat
+bpb_total_sectors:				dw 2880						; 2880 * 512 = 1.44MB
+bpb_media_descriptor_type:		db 0F0h						; F0 = 3.5" floppy disk
+bpb_sectors_per_fat:			dw 9						; 9 sectors/fat
 bpb_sectors_per_track:			dw 18
-bpb_heads:									dw 2
-bpb_hidden_sectors:					dd 0
+bpb_heads:						dw 2
+bpb_hidden_sectors:				dd 0
 bpb_large_sector_count:			dd 0
 
 ; Расширенная загрузочная запись
-ebr_drive_number: 					db 0
-														db 0
-ebr_signature:							db 29h
-ebr_volume_id:							db 12h, 34h, 56h, 78h
-ebr_volume_label: 					db '           '
-ebr_system_id:							db 'FAT12   '
+ebr_drive_number: 				db 0
+								db 0
+ebr_signature:					db 29h
+ebr_volume_id:					db 12h, 34h, 56h, 78h
+ebr_volume_label: 				db '           '
+ebr_system_id:					db 'FAT12   '
 
 ;
 ;	Дальше код
@@ -68,39 +68,39 @@ start:
 	jc floppy_error
 	pop es
 
-	and cl, 0x3F											; remove 2 top bits
+	and cl, 0x3F						; remove 2 top bits
 	xor ch, ch
 	mov [bpb_sectors_per_track], cx		; sector count
 
 	inc dh
-	mov [bpb_heads], dh								; head count
+	mov [bpb_heads], dh					; head count
 
-	;	compute LBA of root directory = reserved + fats * sectors_per_fat
+	; compute LBA of root directory = reserved + fats * sectors_per_fat
 	mov ax, [bpb_sectors_per_fat]			
 	mov bl, [bpb_fat_count]
 	xor bh, bh
-	mul bx														;	ax = (fats * sectors_per_fat)
+	mul bx								;	ax = (fats * sectors_per_fat)
 	add ax, [bpb_reserved_sectors]		; ax = LBA of root directory
 	push ax
 
-	;	compute size of root directory = (32 * number_of_entries) / bytes_per_sector
+	; compute size of root directory = (32 * number_of_entries) / bytes_per_sector
 	mov ax, [bpb_sectors_per_fat]
-	shl ax, 5													; ax = 32
-	xor dx, dx												; dx = 0
+	shl ax, 5							; ax = 32
+	xor dx, dx							; dx = 0
 	div word [bpb_bytes_per_sector]		; number of sectors we need to read
 
-	test dx, dx												; if dx != 0, add 1
+	test dx, dx							; if dx != 0, add 1
 	jz .root_dir_after
-	inc ax														; division remainder != 0, add 1
-																		; this means we have a sector only partially filled with entries
+	inc ax								; division remainder != 0, add 1
+										; this means we have a sector only partially filled with entries
 
 .root_dir_after:
 
 	; read root directory
-	mov cl, al												; cl = number of sectors to read = size of root directory
-	pop ax														; ax = LBA of root directory
-	mov dl, [ebr_drive_number]				; dl = drive number (we saved it previosly)
-	mov bx, buffer										;	es:bx = buffer
+	mov cl, al							; cl = number of sectors to read = size of root directory
+	pop ax								; ax = LBA of root directory
+	mov dl, [ebr_drive_number]			; dl = drive number (we saved it previosly)
+	mov bx, buffer						; es:bx = buffer
 	call disk_read
 
 	; search for kernel.bin
@@ -109,7 +109,7 @@ start:
 
 .search_kernel:
 	mov si, file_kernel_bin
-	mov cx, 11												; compare up 11 characters
+	mov cx, 11							; compare up 11 characters
 	push di
 	repe cmpsb
 	pop di
@@ -126,7 +126,7 @@ start:
 .found_kernel:
 
 	; di should have the address to the entry
-	mov ax, [di + 26]									; first logical cluster field (offset 26)
+	mov ax, [di + 26]					; first logical cluster field (offset 26)
 	mov [kernel_cluster], ax
 
 	; load FAT from disk into memory
@@ -145,8 +145,8 @@ start:
 
 	; Read next cluster
 	mov ax, [kernel_cluster]
-	add ax, 31												;	first cluster = (cluster number - 2) * sectors_per_cluster + start_sector
-																		; start sector = reserved + fat + root directory size = 1 + 18 + 134 = 33
+	add ax, 31							; first cluster = (cluster number - 2) * sectors_per_cluster + start_sector
+										; start sector = reserved + fat + root directory size = 1 + 18 + 134 = 33
 
 	mov cl, 1
 	mov dl, [ebr_drive_number]
@@ -159,11 +159,11 @@ start:
 	mov cx, 3
 	mul cx
 	mov cx, 2
-	div cx														; ax = index of entry in FAT, dx = cluster mod 2
+	div cx								; ax = index of entry in FAT, dx = cluster mod 2
 
 	mov si, buffer
 	add si, ax
-	mov ax, [ds:si]										; read entry from FAT table at index ax
+	mov ax, [ds:si]						; read entry from FAT table at index ax
 
 	or dx, dx
 	jz .even
@@ -176,7 +176,7 @@ start:
 	and ax, 0x0FFF
 
 .next_cluster_after:
-	cmp ax, 0x0FF8											; end of chain
+	cmp ax, 0x0FF8						; end of chain
 	jae .read_finish
 
 	mov [kernel_cluster], ax
@@ -185,15 +185,15 @@ start:
 .read_finish:
 	
 	;	jump to our kernel
-	mov dl, [ebr_drive_number]								; boot device in dl
+	mov dl, [ebr_drive_number]			; boot device in dl
 
-	mov ax, KERNEL_LOAD_SEGMENT								; set segment registers
+	mov ax, KERNEL_LOAD_SEGMENT			; set segment registers
 	mov ds, ax
 	mov es, ax
 
 	jmp KERNEL_LOAD_SEGMENT: KERNEL_LOAD_OFFSET
 
-	jmp wait_key_and_reboot										; should never happen
+	jmp wait_key_and_reboot				; should never happen
 
 	cli
 	hlt
@@ -210,8 +210,8 @@ kernel_not_found_error:
 
 wait_key_and_reboot:
 	mov ah, 0
-	int 16h														; wait for keypress
-	jmp 0FFFFh:0											; jump to beginning of BIOS, should reboot
+	int 16h								; wait for keypress
+	jmp 0FFFFh:0						; jump to beginning of BIOS, should reboot
 
 .halt:
 	cli
@@ -259,20 +259,20 @@ lba_to_chs:
 	push ax
 	push dx
 
-	xor dx, dx													; dx = 0
-	div word [bpb_sectors_per_track]		;	ax = LBA / SectorsPerTrack
-																			; dx = LBA % SectorsPerTrack
+	xor dx, dx								; dx = 0
+	div word [bpb_sectors_per_track]		; ax = LBA / SectorsPerTrack
+											; dx = LBA % SectorsPerTrack
 	
-	inc dx															; dx = (LBA % SectorsPerTrack + 1) = sector
-	mov cx, dx 													; cx = sector
+	inc dx									; dx = (LBA % SectorsPerTrack + 1) = sector
+	mov cx, dx 								; cx = sector
 
-	xor dx, dx													; dx = 0
-	div word [bpb_heads]								; ax = (LBA / SectorsPerTrack) / Heads = cylinder
-																			; dx = (LBA / SectorsPerTrack) % Heads = head
-	mov dh, dl													; dx = head
-	mov ch, al													; ch = cylinder (lower 8 bits)
+	xor dx, dx								; dx = 0
+	div word [bpb_heads]					; ax = (LBA / SectorsPerTrack) / Heads = cylinder
+											; dx = (LBA / SectorsPerTrack) % Heads = head
+	mov dh, dl								; dx = head
+	mov ch, al								; ch = cylinder (lower 8 bits)
 	shl ah, 6
-	or cl, ah														; put upper 2 bits of cylinder in CL
+	or cl, ah								; put upper 2 bits of cylinder in CL
 
 	pop ax
 	mov dl, al
@@ -294,17 +294,17 @@ disk_read:
 	push dx
 	push di
 
-	push cx															; save CL (number of sectors to read)
+	push cx													; save CL (number of sectors to read)
 	call lba_to_chs											; compute CHS
-	pop ax															; AL = number of sectors
+	pop ax													; AL = number of sectors
 
 	mov ah, 02h
-	mov di, 3														; retry count
+	mov di, 3												; retry count
 
 .retry:
-	pusha																; save all registers
-	stc																	; set carry flag, some BIOS'es don't set it
-	int 13h															; carry flag cleared = success
+	pusha													; save all registers
+	stc														; set carry flag, some BIOS'es don't set it
+	int 13h													; carry flag cleared = success
 	jnc	.done
 	
 	; failed
@@ -342,11 +342,11 @@ disk_reset:
 	popa
 	ret
 
-msg_loading: 					db 'Loading...', ENDL, 0
-msg_read_failed: 			db 'Read from disk failed!', ENDL, 0
-msg_kernel_not_found: db 'KERNEL.BIN file not found', ENDL, 0
-file_kernel_bin:			db 'KERNEL  BIN'
-kernel_cluster: 			dw	0
+msg_loading: 			db 'Loading...', ENDL, 0
+msg_read_failed: 		db 'Read from disk failed!', ENDL, 0
+msg_kernel_not_found: 	db 'KERNEL.BIN file not found', ENDL, 0
+file_kernel_bin:		db 'KERNEL  BIN'
+kernel_cluster: 		dw	0
 
 KERNEL_LOAD_SEGMENT 	equ 0x2000
 KERNEL_LOAD_OFFSET		equ 0
