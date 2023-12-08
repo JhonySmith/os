@@ -13,7 +13,7 @@ bpb_oem_ident:           		db 'MSWIN4.1'			; 8 bytes
 bpb_bytes_per_sector:    		dw 512
 bpb_sectors_per_cluster: 		db 1
 bpb_reserved_sectors:   		dw 1
-bpb_fat_count: 							db 2
+bpb_fat_count:							db 2
 bpb_dir_entries_count:			dw 0E0h
 bpb_total_sectors:					dw 2880						; 2880 * 512 = 1.44MB
 bpb_media_descriptor_type:	db 0F0h						; F0 = 3.5" floppy disk
