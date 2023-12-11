@@ -13,9 +13,9 @@ bpb_oem_ident:           		db 'MSWIN4.1'				; 8 bytes
 bpb_bytes_per_sector:    		dw 512
 bpb_sectors_per_cluster: 		db 1
 bpb_reserved_sectors:   		dw 1
-bpb_fat_count:					db 2
+bpb_fat_count:  						db 2
 bpb_dir_entries_count:			dw 0E0h
-bpb_total_sectors:				dw 2880						; 2880 * 512 = 1.44MB
+bpb_total_sectors:  			dw 2880						; 2880 * 512 = 1.44MB
 bpb_media_descriptor_type:		db 0F0h						; F0 = 3.5" floppy disk
 bpb_sectors_per_fat:			dw 9						; 9 sectors/fat
 bpb_sectors_per_track:			dw 18
@@ -342,11 +342,11 @@ disk_reset:
 	popa
 	ret
 
-msg_loading: 			db 'Loading...', ENDL, 0
-msg_read_failed: 		db 'Read from disk failed!', ENDL, 0
-msg_kernel_not_found: 	db 'KERNEL.BIN file not found', ENDL, 0
-file_kernel_bin:		db 'KERNEL  BIN'
-kernel_cluster: 		dw	0
+msg_loading: 						db 'Loading...', ENDL, 0
+msg_read_failed: 				db 'Read from disk failed!', ENDL, 0
+msg_kernel_not_found: 	db 'STAGE2.BIN file not found', ENDL, 0
+file_kernel_bin:				db 'STAGE2  BIN'
+kernel_cluster: 				dw	0
 
 KERNEL_LOAD_SEGMENT 	equ 0x2000
 KERNEL_LOAD_OFFSET		equ 0
